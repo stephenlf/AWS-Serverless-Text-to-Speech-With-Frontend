@@ -27,7 +27,7 @@ resource "aws_apigatewayv2_api" "api" {
   cors_configuration {
     allow_headers = ["x-tts-taskid"]
     allow_methods = ["OPTIONS", "PUT", "POST", "GET"]
-    allow_origins = [var.bucket_origin]
+    allow_origins = [var.origin]
   }
   description = "Web API for interfacing with the TTS Lambda functions."
 }

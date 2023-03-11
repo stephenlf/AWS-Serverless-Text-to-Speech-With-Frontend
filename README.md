@@ -73,6 +73,21 @@ The HTTP API defined in the Terraform template passes requests largely unmodifie
 
 The Terraform template accepts the following variables during initialization:
 
-<details><>
+<details><summary>See TTS-API Terraform Variables</summary>
 
+|Variable|Description|
+|---|---|
+origin*|Defines the access-control-allow-origin variable in the API CORS policy. If hosting the frontend as an S3 static bucket, typically this takes the form http://bucket-name.s3-website[-/.]Region.amazonaws.com. If running the frontend on localhost, "*" is more appropriate.
+initializeTask_lambda_name*|Name of the Lambda function containing the code from TTS_initializeTask.py. Typically, this is "TTS_initializeTask".
+retrieveTask_lambda_name*|Name of the Lambda function containing the code from TTS_retrieveTask.py. Typically, this is "TTS_retrieveTask".
+initializeTask_lambda_qualifier|The Alias name or version number of the initializeTask Lambda function. E.g., $LATEST, my-alias, or 1. Defaults to $LATEST.
+retrieveTask_lambda_qualifier|The Alias name or version number of the retrieveTask Lambda function. E.g., $LATEST, my-alias, or 1. Defaults to $LATEST.
+default_api_burst_limit|Defaults to 5 to avoid racking up charges.
+default_api_rate_limit|Defaults to 5 to avoid racking up charges.
+
+*Required
+</details>
+
+### Simple Frontend: Webfiles
+At the core of the simple frontend
 # Test

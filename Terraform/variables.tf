@@ -1,5 +1,5 @@
-variable "bucket_origin" {
-    description = "The domain of the static website which will be accessing this API. Typically of the form http://bucket-name.s3-website[-/.]Region.amazonaws.com. May also be set to '*' (NOT SECURE)"
+variable "origin" {
+    description = "The domain of the static website which will be accessing this API. If the website is hosted on S3, typically the origin is of the form http://bucket-name.s3-website[-/.]Region.amazonaws.com. This may also be set to '*' (NOT SECURE)"
     type = string
 }
 
@@ -26,12 +26,12 @@ variable "retrieveTask_lambda_qualifier" {
 }
 
 variable "default_api_burst_limit" {
-    description = "The default route throttling burst limit. The default it low too avoid calling this API too often and racking up charges."
+    description = "The default route throttling burst limit. The default it low to avoid calling this API too often and racking up charges."
     type = number
     default = 5
 }
 variable "default_api_rate_limit" {
-    description = "The default route throttling burst limit. The default it low too avoid calling this API too often and racking up charges."
+    description = "The default route throttling burst limit. The default it low to avoid calling this API too often and racking up charges."
     type = number
     default = 5
 }
