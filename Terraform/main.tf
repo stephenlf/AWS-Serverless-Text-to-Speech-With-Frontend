@@ -66,7 +66,7 @@ resource "aws_apigatewayv2_route" "initializeTask_route" {
 
 resource "aws_apigatewayv2_route" "retrieveTask_route" {
   api_id = aws_apigatewayv2_api.api.id
-  route_key = "POST /retrieveTask"
+  route_key = "GET /retrieveTask"
   target = "integrations/${aws_apigatewayv2_integration.retrieveTask_integration.id}"
 }
 
@@ -79,4 +79,9 @@ resource "aws_apigatewayv2_stage" "default" {
     throttling_burst_limit = var.default_api_burst_limit
     throttling_rate_limit = var.default_api_rate_limit
   }
+}
+
+output "api_invocation_url" {
+  description = "Invocation URL for the newly initialized API. "
+  value = aws_apigatewayv2_api.api.api_endpoint
 }

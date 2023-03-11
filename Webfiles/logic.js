@@ -1,3 +1,6 @@
+const init_synthesis_task_api = "<API_URL>/initializeTask";
+const fetch_url_api = "<API_URL>/retrieveTask";
+
 const speech_text_form = document.getElementById('speech-text-form')
 const response_details_1 = document.getElementById('response-details-1');
 const response_details_2 = document.getElementById('response-details-2');
@@ -6,7 +9,6 @@ const response_box = document.getElementById('response-box');
 
 async function initializeTask() {
     const input_text = document.getElementById('input-text');
-    const init_synthesis_task_api = "<INITIALIZE_TASK_INVOCATION_URL>";
     input_text.disabled = true;
     console.log('Requesting Task ID from AWS Polly');
     console.log(`Requested Text: ${input_text.value}`);
@@ -35,7 +37,6 @@ async function retrieveTask(task_id, sleep_time=1000) {
     if (sleep_time > 10000) {
         throw new Error('Timeout');
     }
-    const fetch_url_api = "<RETRIEVE_TASK_INVOCATION_URL>";
     const payload = {mode: "cors", headers: {"x-tts-taskid": task_id}};
     console.log(payload);
         var fetch_task = await fetch(fetch_url_api, payload)
