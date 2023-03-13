@@ -1,5 +1,5 @@
-const init_synthesis_task_api = "<API_URL>/initializeTask";
-const fetch_url_api = "<API_URL>/retrieveTask";
+const init_synthesis_task_api = "<API_URL>/TTS_initializeTask";
+const fetch_url_api = "<API_URL>/TTS_StepFunction";
 
 const speech_text_form = document.getElementById('speech-text-form')
 const response_details_1 = document.getElementById('response-details-1');
@@ -11,15 +11,15 @@ async function initializeTask() {
     const input_text = document.getElementById('input-text');
     input_text.disabled = true;
     console.log('Requesting Task ID from AWS Polly');
-    console.log(`Requested Text: ${input_text.value}`);
+    console.log(`Requested Text: ${input_text.value} from ${init_synthesis_task_api}`);
     response_details_1.textContent = 'Fetching audio URL...';
     const request = {method: 'POST', body: input_text.value};
-    console.log("requesting!");
-    var polly_task = await fetch(init_synthesis_task_api, request)
+    try {var polly_task = await fetch(init_synthesis_task_api, request)
         .then(response => response.json())
         .then(response => polly_task = response);
-    console.log(polly_task);
-    console.log(typeof(polly_task));
+    } catch {
+        throw new Error('Could not communicate with network.')
+    }
     try {
         const task_id = polly_task['body']['taskId'];
         console.log(task_id);
@@ -75,8 +75,16 @@ function print_response(url) {
 }
 
 speech_text_form.addEventListener('submit', async (event) => {
+    var proceed = true;
     event.preventDefault();
-    const task_id = await initializeTask();
+    const task_id = await initializeTask()
+        .catch(error => {
+            response_details_1.textContent = `ERROR: ${error.message}`;
+            proceed = false;
+        });
+    if (!proceed) {
+        return;
+    }
     console.log(`Task ID: ${task_id}`);
     console.log(`Fetching audio`);
     retrieveTask(task_id)

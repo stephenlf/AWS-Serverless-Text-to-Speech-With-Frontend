@@ -189,9 +189,10 @@ Prerequisites: Start an Amazon Polly asynchronous synthesis task.
 
 </Details>
 
-TTS_retrieveTask Lambda Function Unit Tests
+<details><summary>TTS_retrieveTask Lambda Function Unit Tests</summary>
 
 ==========================
+
 **Test Case 1**:
 ```
 {
@@ -208,6 +209,7 @@ TTS_retrieveTask Lambda Function Unit Tests
 **Purpose**: Invalid GET request.
 
 ==========================
+
 **Test Case 2**:
 ```
 {
@@ -224,10 +226,13 @@ TTS_retrieveTask Lambda Function Unit Tests
 **Purpose**: GET valid, complete Task ID.
 
 ==========================
+
 **Test Case 3**:
 ```
 {
-   "headers": {"x-tts-taskid": "EXAMPLE-fake-id-1234567"}
+   "headers": {
+      "x-tts-taskid": "EXAMPLE-fake-id-1234567"
+   }
 }
 ```
 **Expected response**: 
@@ -240,3 +245,7 @@ TTS_retrieveTask Lambda Function Unit Tests
 **Purpose**: Invalid GET request.
 
 ==========================
+
+</details>
+
+WebFiles "logic.json" Unit Tests
