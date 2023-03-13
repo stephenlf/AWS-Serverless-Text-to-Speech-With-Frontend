@@ -1,3 +1,4 @@
+import json
 from boto3 import client
 
 def lambda_handler(event, context):
@@ -10,8 +11,16 @@ def lambda_handler(event, context):
             "body": "ERROR: TaskID not specified in the x-tts-taskid header."
         }
     polly_client = client('polly')
-    synthesis_task = polly_client.get_speech_synthesis_task(TaskId=taskID)
+    try:
+        synthesis_task = polly_client.get_speech_synthesis_task(TaskId=taskID)
+    except:
+        return {
+            "statusCode": 400,
+            "body": "ERROR: Invalid Task ID."
+        }
     synthesis_task = synthesis_task['SynthesisTask']
+    
+    command = synthesis_task['TaskStatus']
     if synthesis_task['TaskStatus'] == 'scheduled' or synthesis_task['TaskStatus'] == 'inProgress':
         return {
             'statusCode': 302,

@@ -49,7 +49,7 @@ The code provided by this repository assumes that you have the following resourc
 2. In "logic.js", line 1 and 2, change `<API_URL>` to the api_invocation_url return in step III.4 above.
 3. Upload the "error.html", "index.html", and "logic.js" to a web server.
 
-# Resource Details
+## Resource Details
 ### Lambda Function: TTS_initializeTask
 TTS_initializeTask takes in the request passed by TTS-API and pulls the 'body' element out of the JSON-formatted message. After checking to make sure there was well-formatted message (ln. 27) that wasn't too long (ln. 37), it passes the payload to Amazon Polly to begin making the audio file. Polly returns a task ID, which TTS_initializeTask passes back to TTS-API. This function also passes the header `x-tts-bucketkey` which provides what will become the audio file S3 object ID. This can be useful for Step Functions that want to act on the synthesized audio file directly. 
 
@@ -88,6 +88,155 @@ default_api_rate_limit|Defaults to 5 to avoid racking up charges.
 *Required
 </details>
 
+TTS-API accepts the following requests:
+1. `POST <INVOKE_URL>/initializeTask` accepts a string of text in the body of the request.
+2. `GET <INVOKE_URL>/retrieveTask`expects a Polly Task ID to be provided in the custom `x-tts-taskid` header.
+
 ### Simple Frontend: Webfiles
-At the core of the simple frontend
-# Test
+At the core of the frontend is a web form HTML element. Upon submission, an event listener sends an asyncronous request to TTS-API to fetch a task ID from Polly through the  *initializeTask*  Lambda function `logic.js/ln:79`. 
+
+Upon successful task ID retrieval, the listener's handler function attempts to fetch the finshed audio file URL from Polly through the *retrieveTask* Lambda function `logic.js/ln:82`. If the task is still pending, the function waits a rest period then tries again. The rest period starts at one second and increases linearly, one additional second per attempt, for a max rest period of 10 seconds. This makes the effective timeout time for the retrieval task about 55 seconds.
+
+## Testing the Resources
+The following unit tests may be helpful to make sure that each component is working correctly.
+
+Prerequisites: Start an Amazon Polly asynchronous synthesis task.
+1. Go to Amazon Polly > Text-to-Speech. Add any input text you want, then click "Save to S3". Fill in the information for the bucket you made to store synthesis tasks and again click "Save to S3".
+2. Go to Amazon Polly > S3 Synthesis Tasks and record the Task ID of the task you just started. Make sure the task is marked "✅ Completed". 
+3. Click on the "S3 URL" of the newly synthesized audio file. Find and record the "Object URL" from the S3 console.
+
+<Details><Summary>S3 Read-only Bucket Unit Tests</Summary>
+
+* Attempt to open your Object URL from an Incognito window in your browser. If you can open it, then permissions are suitable adequately public.
+</Details>
+
+<Details><Summary>TTS_initializeTask Lambda Function Unit Tests</Summary>
+==========================
+
+**Test Case 1**:
+```
+{
+   "body": "This is a test of the initialize task Lambda function"
+}
+```
+**Expected response**: 
+```
+{
+   "isBase64Encoded": False,
+   "statusCode": 202,
+   "headers": {"x-tts-bucketkey": <SOME_BUCKET_KEY>},
+   "body": {"taskId": <SOME_TASK_ID>}
+}
+```
+**Purpose**: Simulates a good request.
+
+==========================
+
+**Test Case 2**:
+```
+{
+   "body": "a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z"
+}
+```
+**Expected response**: 
+```
+{
+   "statusCode": 413,
+   "body": "Your message is too long. Try again"
+}
+```
+**Purpose**: Body > 50 words.
+
+==========================
+
+**Test Case 3**:
+```
+{
+   "body": "ThisIsATestOfARequestWithFewerThanFiftyWordsButMoreThanThreeHundredCharacters ThisIsATestOfARequestWithFewerThanFiftyWordsButMoreThanThreeHundredCharacters ThisIsATestOfARequestWithFewerThanFiftyWordsButMoreThanThreeHundredCharacters ThisIsATestOfARequestWithFewerThanFiftyWordsButMoreThanThreeHundredCharacters"
+}
+```
+**Expected response**: 
+```
+{
+   "statusCode": 413,
+   "body": "Your message is too long. Try again"
+}
+```
+**Purpose**: Body > 300 characters.
+
+==========================
+
+**Test Case 4**:
+```
+{"resource": "/{tts+}", 
+   "path": "/", 
+   "httpMethod": "GET", 
+   "headers": {
+      "origin": "null",
+      "httpMethod": "GET"
+   },
+   "isBase64Encoded": false
+}
+```
+**Expected response**: 
+```
+{
+  "statusCode": 400,
+  "body": "ERROR: TTS payload not specified"
+}
+```
+**Purpose**: Request with no body (for example, from a GET request)
+
+</Details>
+
+TTS_retrieveTask Lambda Function Unit Tests
+
+==========================
+**Test Case 1**:
+```
+{
+   "body": ""
+}
+```
+**Expected response**: 
+```
+{
+   "statusCode": 400,
+   "body": "ERROR: TaskID not specified in the x-tts-taskid header."
+}
+```
+**Purpose**: Invalid GET request.
+
+==========================
+**Test Case 2**:
+```
+{
+   "headers": {"x-tts-taskid": <YOUR_TASK_ID>}
+}
+```
+**Expected response**: 
+```
+{
+   "statusCode": 200,
+   "body": "<BUCKET_OBJECT_URL>"
+}
+```
+**Purpose**: GET valid, complete Task ID.
+
+==========================
+**Test Case 3**:
+```
+{
+   "headers": {"x-tts-taskid": "EXAMPLE-fake-id-1234567"}
+}
+```
+**Expected response**: 
+```
+{
+  "statusCode": 400,
+  "body": "ERROR: Invalid Task ID."
+}
+```
+**Purpose**: Invalid GET request.
+
+==========================
