@@ -33,7 +33,7 @@ async function initializeTask() {
 async function retrieveTask(task_id, sleep_time=1000) {
     const input_text = document.getElementById('input-text');
     input_text.disabled = true;
-    console.log(`Sleeptime: ${sleep_time}`);
+    console.log(`Trying again in ${sleep_time}ms`);
     if (sleep_time > 10000) {
         throw new Error('Timeout');
     }
@@ -43,6 +43,8 @@ async function retrieveTask(task_id, sleep_time=1000) {
         .then(response => {
             if (response.status === 400) {
                 throw new Error('FetchTask API did not receive or could not interpret the contents of the "x-tts-taskid" header.');
+            } else if (response.status === 404) {
+                throw new Error('Invalid Task ID');
             } else if (response.status === 500) {
                 throw new Error('FetchTask API is not working right now. Is the server-side handler working correctly?');
             } else if (response.status === 503) {
@@ -87,6 +89,6 @@ speech_text_form.addEventListener('submit', async (event) => {
     }
     console.log(`Task ID: ${task_id}`);
     console.log(`Fetching audio`);
-    retrieveTask(task_id)
+    await retrieveTask(task_id)
         .catch(error => response_details_1.textContent = error.message);
 });

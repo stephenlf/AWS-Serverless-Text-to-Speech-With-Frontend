@@ -242,10 +242,50 @@ Prerequisites: Start an Amazon Polly asynchronous synthesis task.
   "body": "ERROR: Invalid Task ID."
 }
 ```
-**Purpose**: Invalid GET request.
+**Purpose**: Invalid Task ID.
 
 ==========================
 
 </details>
 
-WebFiles "logic.json" Unit Tests
+
+<details><summary>WebFiles > logic.js Unit Tests</summary>
+
+==========================
+
+**Test Case 1**: Run in the browser console after loading "logic.js"
+```
+retrieveTask(<TASK_ID>);
+```
+**Expected response**: Console standard output. This may take a couple of tries.
+
+```
+sleep_time: 1000ms
+Task retrieved successfully
+```
+**Purpose**: Confirm that *retrieveTask* works.
+
+==========================
+
+**Test Case 2**: Run in the browser console after loading "logic.js"
+```
+initializeTask();
+```
+**Expected response**: 
+```
+Requesting Task ID from AWS Polly
+Requested Text: Input text here from <API_URL>/TTS_initializeTask
+<NEW_TASK_ID>
+```
+**Purpose**: Confirm that *initializeTask* works and that a good API_URL has been loaded.
+
+==========================
+
+**Test Case 3**: Click the submit button
+
+**Expected response**: After about 15 seconds, an S3 object URL to an audio file is provided. The audio file contains the text submitted in the form element.
+
+**Purpose**: Test website function.
+
+==========================
+</details>
